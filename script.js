@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let analyser;
   let microphone;
 
+  const cheerAudio = new Audio('cheer.mp3'); // place cheer.mp3 in project folder
+
   function updateCandleCount() {
     const activeCandles = candles.filter(
       (candle) => !candle.classList.contains("out")
@@ -44,31 +46,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     let average = sum / bufferLength;
 
-    return average > 40; //
+    return average > 40;
   }
 
   function blowOutCandles() {
-  let blownOut = 0;
+    let blownOut = 0;
 
-  if (isBlowing()) {
-    candles.forEach((candle) => {
-      if (!candle.classList.contains("out") && Math.random() > 0.5) {
-        candle.classList.add("out");
-        blownOut++;
+    if (isBlowing()) {
+      candles.forEach((candle) => {
+        if (!candle.classList.contains("out") && Math.random() > 0.5) {
+          candle.classList.add("out");
+          blownOut++;
+        }
+      });
+    }
+
+    if (blownOut > 0) {
+      updateCandleCount();
+
+      const activeCandles = candles.filter(c => !c.classList.contains("out")).length;
+      if (activeCandles === 0 && candles.length > 0) {
+        const message = document.getElementById("birthdayMessage");
+        message.style.display = "block";
+        cheerAudio.play();
       }
-    });
-  }
-
-  if (blownOut > 0) {
-    updateCandleCount();
-
-    // Check if all candles are out
-    const activeCandles = candles.filter(c => !c.classList.contains("out")).length;
-    if (activeCandles === 0 && candles.length > 0) {
-      document.getElementById("birthdayMessage").style.display = "block";
     }
   }
-}
 
   if (navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices

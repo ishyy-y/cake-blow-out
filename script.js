@@ -1,17 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
   const cake = document.querySelector(".cake");
+  const messageBox = document.getElementById("messageBox");
   let candles = [];
-  let audioContext;
-  let analyser;
-  let microphone;
+  let audioContext, analyser, microphone;
 
-  const cheerAudio = new Audio('cheer.mp3'); // place cheer.mp3 in project folder
+  const cheerAudio = new Audio("cheer.mp3");
+  const happySong = new Audio("happy.mp3"); // add happy birthday song
 
-  function updateCandleCount() {
-    const activeCandles = candles.filter(
-      (candle) => !candle.classList.contains("out")
-    ).length;
-  }
+  // Step 1: Initial instruction
+  messageBox.innerText = "🎂 Touch on the cake to light the candles";
 
   function addCandle(left, top) {
     const candle = document.createElement("div");
@@ -25,14 +22,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     cake.appendChild(candle);
     candles.push(candle);
-    updateCandleCount();
+
+    if (candles.length === 22) {
+      // Step 2: Show Happy Birthday Song lyrics
+      messageBox.innerText =
+        "🎵 Happy Birthday to you 🎵\n🎵 Happy Birthday to you 🎵\n🎵 Happy Birthday dear Baby 🎵\n🎵 Happy Birthday to you 🎵";
+      happySong.play();
+
+      // After song ends → Step 3 instruction
+      happySong.onended = () => {
+        messageBox.innerText = "🎤 What will you do now?\nBlow the candles!";
+      };
+    }
   }
 
   cake.addEventListener("click", function (event) {
-    const rect = cake.getBoundingClientRect();
-    const left = event.clientX - rect.left;
-    const top = event.clientY - rect.top;
-    addCandle(left, top);
+    if (candles.length < 22) {
+      const rect = cake.getBoundingClientRect();
+      const left = event.clientX - rect.left;
+      const top = event.clientY - rect.top;
+      addCandle(left, top);
+    }
   });
 
   function isBlowing() {
@@ -41,38 +51,29 @@ document.addEventListener("DOMContentLoaded", function () {
     analyser.getByteFrequencyData(dataArray);
 
     let sum = 0;
-    for (let i = 0; i < bufferLength; i++) {
-      sum += dataArray[i];
-    }
-    let average = sum / bufferLength;
-
-    return average > 40;
+    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
+    return sum / bufferLength > 40;
   }
 
   function blowOutCandles() {
-    let blownOut = 0;
-
     if (isBlowing()) {
       candles.forEach((candle) => {
-        if (!candle.classList.contains("out") && Math.random() > 0.5) {
+        if (!candle.classList.contains("out")) {
           candle.classList.add("out");
-          blownOut++;
         }
       });
-    }
 
-    if (blownOut > 0) {
-      updateCandleCount();
-
-      const activeCandles = candles.filter(c => !c.classList.contains("out")).length;
-      if (activeCandles === 0 && candles.length > 0) {
-        const message = document.getElementById("birthdayMessage");
-        message.style.display = "block";
+      const active = candles.filter(c => !c.classList.contains("out")).length;
+      if (active === 0 && candles.length >= 22) {
+        // Step 4: Final message
+        messageBox.innerText = "👩🏽‍❤️‍💋‍👨🏻 Happy 22nd my baby! 👩🏽‍❤️‍💋‍👨🏻";
         cheerAudio.play();
+        clearInterval(blowCheck);
       }
     }
   }
 
+  let blowCheck;
   if (navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices
       .getUserMedia({ audio: true })
@@ -82,12 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
         analyser.fftSize = 256;
-        setInterval(blowOutCandles, 200);
+        blowCheck = setInterval(blowOutCandles, 200);
       })
-      .catch(function (err) {
-        console.log("Unable to access microphone: " + err);
-      });
-  } else {
-    console.log("getUserMedia not supported on your browser!");
+      .catch(err => console.log("Mic access error: " + err));
   }
 });

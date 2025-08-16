@@ -9,16 +9,6 @@ body {
   align-items: center;
 }
 
-#funnyText {
-  display: none; /* hidden initially */
-  text-align: center;
-  color: white;
-  font-family: 'Pacifico', cursive; /* same font style as birthday message */
-  font-size: 40px; /* slightly smaller than birthday message */
-  margin-top: 50px;
-}
-
-
 .cake {
   position: absolute;
   width: 250px;

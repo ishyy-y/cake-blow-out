@@ -24,21 +24,12 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCandleCount();
   }
 
-cake.addEventListener("click", function (event) {
-  const rect = cake.getBoundingClientRect();
-  const left = event.clientX - rect.left;
-  const top = event.clientY - rect.top;
-
-  // first tap actions
-  if (firstTap) {
-    happyAudio.play();
-    funnyText.style.display = "block";
-    firstTap = false;
-  }
-
-  addCandle(left, top);
-});
-
+  cake.addEventListener("click", function (event) {
+    const rect = cake.getBoundingClientRect();
+    const left = event.clientX - rect.left;
+    const top = event.clientY - rect.top;
+    addCandle(left, top);
+  });
 
   function isBlowing() {
     const bufferLength = analyser.frequencyBinCount;

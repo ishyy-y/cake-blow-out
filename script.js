@@ -1,12 +1,16 @@
 document.addEventListener("DOMContentLoaded", function () {
   const cake = document.querySelector(".cake");
   let candles = [];
-  let audioContext, analyser, microphone;
+  let audioContext;
+  let analyser;
+  let microphone;
 
   const cheerAudio = new Audio('cheer.mp3'); // place cheer.mp3 in project folder
 
   function updateCandleCount() {
-    const activeCandles = candles.filter(c => !c.classList.contains("out")).length;
+    const activeCandles = candles.filter(
+      (candle) => !candle.classList.contains("out")
+    ).length;
   }
 
   function addCandle(left, top) {
@@ -37,7 +41,9 @@ document.addEventListener("DOMContentLoaded", function () {
     analyser.getByteFrequencyData(dataArray);
 
     let sum = 0;
-    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
+    for (let i = 0; i < bufferLength; i++) {
+      sum += dataArray[i];
+    }
     let average = sum / bufferLength;
 
     return average > 40;
@@ -47,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let blownOut = 0;
 
     if (isBlowing()) {
-      candles.forEach(candle => {
+      candles.forEach((candle) => {
         if (!candle.classList.contains("out") && Math.random() > 0.5) {
           candle.classList.add("out");
           blownOut++;
@@ -68,8 +74,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then(function (stream) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
         microphone = audioContext.createMediaStreamSource(stream);
@@ -77,7 +84,9 @@ document.addEventListener("DOMContentLoaded", function () {
         analyser.fftSize = 256;
         setInterval(blowOutCandles, 200);
       })
-      .catch(err => console.log("Unable to access microphone: " + err));
+      .catch(function (err) {
+        console.log("Unable to access microphone: " + err);
+      });
   } else {
     console.log("getUserMedia not supported on your browser!");
   }

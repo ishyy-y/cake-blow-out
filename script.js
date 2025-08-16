@@ -26,12 +26,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (candles.length === 22) {
       // Step 2: Show Happy Birthday Song lyrics
       messageBox.innerText =
-        "🎵 Happy Birthday to you 🎵\n🎵 Happy Birthday to you 🎵\n🎵 Happy Birthday dear Baby 🎵\n🎵 Happy Birthday to you 🎵";
+        "Me trying to pronounce them correclty!";
       happySong.play();
 
       // After song ends → Step 3 instruction
       happySong.onended = () => {
-        messageBox.innerText = "🎤 What will you do now?\nBlow the candles!";
+        messageBox.innerText = "What will you do now?\nMake a wish and blow the candles!";
       };
     }
   }

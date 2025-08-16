@@ -1,90 +1,66 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const cake = document.querySelector(".cake");
-  const messageBox = document.getElementById("messageBox");
-  let candles = [];
-  let audioContext, analyser, microphone;
+const messageBox = document.getElementById("messageBox");
+const birthdayMessage = document.getElementById("birthdayMessage");
 
-  const cheerAudio = new Audio("cheer.mp3");
-  const happySong = new Audio("happy.mp3"); // add happy birthday song
+const happySong = new Audio("happy.mp3");
+const cheer = new Audio("cheer.mp3");
 
-  // Step 1: Initial instruction
-  messageBox.innerText = "🎂 Touch on the cake to light the candles";
+const flames = document.querySelectorAll(".flame");
 
-  function addCandle(left, top) {
-    const candle = document.createElement("div");
-    candle.className = "candle";
-    candle.style.left = left + "px";
-    candle.style.top = top + "px";
+let candlesLit = false;
+let songFinished = false;
+let finalMessageShown = false;
 
-    const flame = document.createElement("div");
-    flame.className = "flame";
-    candle.appendChild(flame);
-
-    cake.appendChild(candle);
-    candles.push(candle);
-
-    if (candles.length === 22) {
-      // Step 2: Show Happy Birthday Song lyrics
-      messageBox.innerText =
-        "Me trying to pronounce them correclty!";
-      happySong.play();
-
-      // After song ends → Step 3 instruction
-      happySong.onended = () => {
-        messageBox.innerText = "What will you do now?\nMake a wish and blow the candles!";
-      };
-    }
+// STEP 1: Light candles on first tap
+document.body.addEventListener("click", () => {
+  if (!candlesLit) {
+    candlesLit = true;
+    messageBox.textContent = "Me trying to pronounce them correctly!";
+    return;
   }
 
-  cake.addEventListener("click", function (event) {
-    if (candles.length < 22) {
-      const rect = cake.getBoundingClientRect();
-      const left = event.clientX - rect.left;
-      const top = event.clientY - rect.top;
-      addCandle(left, top);
-    }
-  });
-
-  function isBlowing() {
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    analyser.getByteFrequencyData(dataArray);
-
-    let sum = 0;
-    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
-    return sum / bufferLength > 40;
+  // STEP 2: Blow candles after tap (while song hasn't started)
+  if (candlesLit && !songFinished && flames.length > 0) {
+    blowCandlesRandom();
+    return;
   }
 
-  function blowOutCandles() {
-    if (isBlowing()) {
-      candles.forEach((candle) => {
-        if (!candle.classList.contains("out")) {
-          candle.classList.add("out");
-        }
-      });
-
-      const active = candles.filter(c => !c.classList.contains("out")).length;
-      if (active === 0 && candles.length >= 22) {
-        // Step 4: Final message
-        messageBox.innerText = "👩🏽‍❤️‍💋‍👨🏻 Happy 22nd my baby! 👩🏽‍❤️‍💋‍👨🏻";
-        cheerAudio.play();
-        clearInterval(blowCheck);
-      }
-    }
-  }
-
-  let blowCheck;
-  if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then(function (stream) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        microphone = audioContext.createMediaStreamSource(stream);
-        microphone.connect(analyser);
-        analyser.fftSize = 256;
-        blowCheck = setInterval(blowOutCandles, 200);
-      })
-      .catch(err => console.log("Mic access error: " + err));
+  // STEP 3: After song ends → next tap shows final message
+  if (songFinished && !finalMessageShown) {
+    messageBox.textContent = "What will you do now?/n Make a wish and blow the candles";
+    finalMessageShown = true;
   }
 });
+
+function blowCandlesRandom() {
+  let remainingFlames = Array.from(flames);
+
+  function extinguishOne() {
+    if (remainingFlames.length === 0) {
+      // All candles out → play cheer + show Happy 22nd
+      cheer.play();
+      showBirthdayMessage();
+      playHappySong();
+      return;
+    }
+    const randomIndex = Math.floor(Math.random() * remainingFlames.length);
+    const flame = remainingFlames[randomIndex];
+    flame.style.display = "none";
+    remainingFlames.splice(randomIndex, 1);
+
+    setTimeout(extinguishOne, 400); // extinguish one every 0.4s
+  }
+
+  extinguishOne();
+}
+
+function showBirthdayMessage() {
+  birthdayMessage.classList.add("show");
+}
+
+function playHappySong() {
+  happySong.play();
+  happySong.onended = () => {
+    songFinished = true;
+    // Next tap → "What will you do now?"
+  };
+}
